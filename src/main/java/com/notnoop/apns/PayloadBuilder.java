@@ -48,6 +48,8 @@ public final class PayloadBuilder {
     private final Map<String, Object> aps;
     private final Map<String, Object> customAlert;
 
+    private String imageUrl;
+
     /**
      * Constructs a new instance of {@code PayloadBuilder}
      */
@@ -125,6 +127,26 @@ public final class PayloadBuilder {
         customAlert.put("action", action);
         return this;
     }
+
+    /**
+	 * Sets mutable-content in order to load dynamic notifications in the iOS app.
+	 *
+	 * @return  this
+	 */
+	public PayloadBuilder alertMutableContent() {
+		aps.put("mutable-content", 1);
+		return this;
+	}
+
+	/**
+	 * Sets media attachment loading Url.
+	 * @param imageUrl The online url of media attachment.
+	 * @return
+	 */
+	public PayloadBuilder imageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+		return this;
+	}
 
     /**
      * Sets the "url-args" key that are paired with the placeholders
@@ -470,6 +492,11 @@ public final class PayloadBuilder {
             insertCustomAlert();
             root.put("aps", aps);
         }
+
+        if (imageUrl != null) {
+        	root.put("image", imageUrl);
+        }
+
         try {
             return mapper.writeValueAsString(root);
         } catch (final Exception e) {
@@ -483,14 +510,11 @@ public final class PayloadBuilder {
                 aps.remove("alert");
                 break;
             case 1:
-                if (customAlert.containsKey("body")) {
-                    aps.put("alert", customAlert.get("body"));
-                    break;
-                }
                 // else follow through
                 //$FALL-THROUGH$
             default:
                 aps.put("alert", customAlert);
+                break;
         }
     }
 
